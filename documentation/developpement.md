@@ -241,6 +241,7 @@ Un lien ne compte qu'une fois le fichier visé suivi par Git : après avoir cré
 
 ## Contribuer
 
+- Une contribution est reçue sous la licence de Torsade, la licence publique générale GNU, version 3 ou toute version ultérieure, sans cession de droits : aucun accord de contributeur n'est demandé. Voir la [licence](../README.md#licence).
 - Code, noms de tables et de colonnes, commentaires, messages de commit et `CHANGELOG.md` sont en anglais ; l'interface et la documentation, en français. Chaque texte de l'interface passe par les traductions (`lang/fr.json`).
 - Une branche par sujet, nommée `feat/`, `fix/` ou `chore/` suivi d'un nom court en anglais.
 - Commits au format Conventional Commits : `feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`, `ci:`. Un sujet par commit.

@@ -38,4 +38,8 @@ En développement : Torsade n'est pas encore prêt pour la production. Le numér
 
 ## Licence
 
-La licence n'est pas encore choisie : elle le sera avant la publication du dépôt.
+Torsade est un logiciel libre : vous pouvez le redistribuer et le modifier selon les termes de la licence publique générale GNU (GNU GPL), version 3 ou toute version ultérieure, telle que publiée par la Free Software Foundation. Il est distribué dans l'espoir qu'il sera utile, mais sans aucune garantie, pas même la garantie implicite d'une valeur marchande ou d'une adéquation à un usage particulier. Le texte complet de la licence est dans [LICENSE](LICENSE).
+
+Copyright (C) 2026 les contributeurs de Torsade
+
+Le code source de chaque version publiée est dans ce dépôt, au tag de la version : `v0.20.0` pour la version 0.20.0, par exemple.
