@@ -1,0 +1,192 @@
+#!/usr/bin/env bash
+# torsade/deploy/bin/torsade-restore
+#
+# Restores a backup made by torsade-backup: the database and, on request,
+# the settings it kept, while the passwords of the database, the address of
+# the application and its certificate stay those of this machine.
+#
+#   sudo torsade-restore [--configuration] [--release X.Y.Z] [--yes] <backup>
+#
+# Asks for a confirmation. A backup of a version newer than the one
+# installed is refused; one of an older version is followed by the
+# migrations. With --release, goes back first to that version, still in
+# /opt/torsade/releases: after an update that failed once switched.
+set -euo pipefail
+
+# shellcheck source=deploy/lib/torsade.sh
+. /usr/local/lib/torsade/torsade.sh
+
+usage() {
+    cat << 'EOF'
+Restauration d'une sauvegarde de Torsade :
+
+  sudo torsade-restore [options] <sauvegarde>
+
+  <sauvegarde>        dossier d'une sauvegarde de /var/backups/torsade
+  --configuration     restaure aussi les réglages conservés par la sauvegarde
+                      (clé de l'application, etc.), en gardant les mots de passe
+                      de la base, l'adresse et le certificat de cette machine
+  --release X.Y.Z     revient d'abord à cette version, encore présente dans
+                      /opt/torsade/releases
+  --yes               sans demander de confirmation
+  -h, --help          cette aide
+EOF
+}
+
+backup=""
+with_configuration=no
+target_version=""
+assume_yes=no
+
+# An option that takes a value and comes without one.
+needs_value() {
+    if [ "$2" -lt 2 ]; then
+        printf 'Option sans valeur : %s\n\n' "$1" >&2
+        usage >&2
+        exit 2
+    fi
+}
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --configuration) with_configuration=yes; shift ;;
+        --release) needs_value "$1" "$#"; target_version="$2"; shift 2 ;;
+        --yes) assume_yes=yes; shift ;;
+        -h | --help) usage; exit 0 ;;
+        -*) printf 'Option inconnue : %s\n\n' "$1" >&2; usage >&2; exit 2 ;;
+        *) backup="$1"; shift ;;
+    esac
+done
+
+require_root
+[ -n "$backup" ] || { usage >&2; exit 2; }
+
+open_log /var/log/torsade-restore.log
+
+# Where the restoration stands, for what a failure says: nothing changed
+# before the maintenance; once the application is in service again, a
+# failure puts it back in maintenance.
+state=checks
+completed=no
+on_exit() {
+    local status=$?
+    if [ "$completed" = yes ] || [ "$status" -eq 0 ] || [ "$state" = checks ]; then
+        return
+    fi
+    if [ "$state" = served ]; then
+        artisan "$TORSADE_CURRENT" down >> "$torsade_log" 2>&1 || true
+    fi
+    logger -p user.err -t torsade-restore -- "Échec de la restauration de $backup à l'étape « $torsade_step »."
+    printf "\nLa restauration s'est arrêtée à l'étape « %s ». L'application reste en maintenance.\n" "$torsade_step" >&2
+    printf "Corrigez la cause indiquée, puis relancez la même commande.\n" >&2
+    show_log_tail
+}
+trap on_exit EXIT
+
+take_lock torsade-admin
+
+step "Contrôles préalables"
+
+[ -f "$TORSADE_INSTALLED" ] || die "Torsade n'est pas installé sur cette machine : installez-le d'abord."
+
+backup="$(cd "$backup" 2> /dev/null && pwd)" || die "sauvegarde introuvable."
+for file in database.sql.gz backup.info configuration.env SHA256SUMS; do
+    [ -f "$backup/$file" ] || die "$backup n'est pas une sauvegarde de Torsade : $file manque."
+done
+(cd "$backup" && run sha256sum --check --strict SHA256SUMS) || die "la sauvegarde est altérée : ses empreintes ne correspondent plus."
+
+backup_version="$(conf_get TORSADE_VERSION "$backup/backup.info")"
+valid_version "$backup_version" || die "version illisible dans $backup/backup.info."
+
+release="$(readlink -f "$TORSADE_CURRENT")"
+if [ -n "$target_version" ]; then
+    valid_version "$target_version" || die "--release attend un numéro de version X.Y.Z."
+    release="$TORSADE_RELEASES/$target_version"
+    [ -f "$release/VERSION" ] || die "la version $target_version n'est plus dans $TORSADE_RELEASES."
+fi
+version="$(tr -d '[:space:]' < "$release/VERSION")"
+
+if version_gt "$backup_version" "$version"; then
+    die "cette sauvegarde vient de la version $backup_version, plus récente que la version $version : installez d'abord la version $backup_version."
+fi
+
+cat << EOF
+
+Sauvegarde : $backup
+  version $backup_version, machine $(conf_get MACHINE "$backup/backup.info"), du $(conf_get DATE "$backup/backup.info")
+
+La base de Torsade sera remplacée par celle de cette sauvegarde : ce qui a été
+saisi depuis sera perdu.
+EOF
+if [ "$with_configuration" = yes ]; then
+    printf 'Les réglages conservés par la sauvegarde remplaceront ceux de %s.\n' "$TORSADE_ENV"
+fi
+if [ "$release" != "$(readlink -f "$TORSADE_CURRENT")" ]; then
+    printf 'La version %s redeviendra la version en service.\n' "$version"
+fi
+
+if [ "$assume_yes" != yes ]; then
+    [ -t 0 ] || die "sans terminal, confirmez par --yes."
+    read -r -p "Tapez « restaurer » pour confirmer : " answer
+    [ "$answer" = restaurer ] || die "restauration abandonnée, rien n'a changé."
+fi
+
+# No backup runs while the database is replaced.
+hold_backup_lock || die "une sauvegarde est en cours depuis plus de 15 minutes : réessayez plus tard."
+
+logger -t torsade-restore -- "Restauration de $backup (version $backup_version) vers la version $version."
+
+step "Maintenance"
+
+state=maintenance
+run artisan "$TORSADE_CURRENT" down
+
+if [ "$release" != "$(readlink -f "$TORSADE_CURRENT")" ]; then
+    step "Retour à la version $version"
+    switch_current "$release"
+    write_managed_files "$release/deploy"
+    reload_nginx
+fi
+
+step "Base de données"
+
+read -r charset collation < <(mariadb --batch --skip-column-names -e \
+    "SELECT DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = '$TORSADE_DB'") \
+    || die "la base $TORSADE_DB n'existe pas : installez d'abord Torsade."
+
+# The grants of the accounts belong to the name of the database: they
+# outlive its removal.
+run mariadb --batch -e "DROP DATABASE \`$TORSADE_DB\`; CREATE DATABASE \`$TORSADE_DB\` CHARACTER SET $charset COLLATE $collation;"
+gzip -dc "$backup/database.sql.gz" | mariadb --batch "$TORSADE_DB" >> "$torsade_log" 2>&1
+
+if [ "$with_configuration" = yes ]; then
+    step "Réglages"
+    # Each line as the backup holds it, quotes included.
+    for setting in "${TORSADE_KEPT_SETTINGS[@]}"; do
+        line="$(grep "^$setting=" "$backup/configuration.env" | tail -n 1 || true)"
+        if [ -n "$line" ]; then
+            conf_set "$setting" "${line#*=}" "$TORSADE_ENV"
+        fi
+    done
+fi
+
+step "Migrations et caches"
+
+# Up to the schema of the version in service, when the backup is older.
+migrate "$release"
+build_caches "$release"
+reload_php
+
+step "Remise en service"
+
+run artisan "$release" up
+state=served
+check_health || die "https://$(conf_get TORSADE_HOST "$TORSADE_SETTINGS")/up ne répond pas OK : voir $torsade_log."
+check_configuration "$release"
+
+# An update that failed is over: the backups and the updates may run.
+rm -f "$TORSADE_UPDATE_FAILED"
+
+completed=yes
+logger -t torsade-restore -- "Restauration de $backup réussie, version $version en service."
+say "Sauvegarde $backup restaurée ; Torsade $version est en service."

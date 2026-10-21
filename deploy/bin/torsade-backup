@@ -1,0 +1,117 @@
+#!/usr/bin/env bash
+# torsade/deploy/bin/torsade-backup
+#
+# Backs up Torsade: a consistent export of its database, its version, the
+# name of the machine and the settings it keeps (see TORSADE_KEPT_SETTINGS),
+# in a directory of /var/backups/torsade named after the date and the time,
+# readable by root only. Never the passwords of the database nor the key of
+# the certificate, which belong to the machine.
+#
+#   sudo torsade-backup
+#
+# Run each day by torsade-backup.timer, and by torsade-update before it
+# changes anything. Removes the backups older than KEEP_DAYS days (see
+# /etc/torsade/backup.conf). Prints the directory of the backup, alone, on
+# its standard output; its successes and failures go to the journal of the
+# system.
+set -euo pipefail
+
+# shellcheck source=deploy/lib/torsade.sh
+. /usr/local/lib/torsade/torsade.sh
+
+require_root
+
+note() {
+    logger -t torsade-backup -- "$*"
+    printf '%s\n' "$*" >&2
+}
+
+work=""
+completed=no
+refusal=""
+on_exit() {
+    local status=$?
+    if [ "$completed" = yes ]; then
+        return
+    fi
+    if [ -n "$work" ]; then
+        rm -rf "$work"
+    fi
+    if [ -n "$refusal" ]; then
+        logger -p user.err -t torsade-backup -- "Sauvegarde refusée : $refusal."
+        return
+    fi
+    logger -p user.err -t torsade-backup -- "Échec de la sauvegarde (code $status)."
+    printf 'Erreur : la sauvegarde a échoué (code %s).\n' "$status" >&2
+}
+trap on_exit EXIT
+
+# A backup that cannot run says why, and what to do.
+refuse() {
+    refusal="$1"
+    printf 'Sauvegarde refusée : %s.\n' "$1" >&2
+    exit 1
+}
+
+# After an update that failed during or after its migrations, the
+# database may be migrated in part: no backup until it is restored.
+if [ -f "$TORSADE_UPDATE_FAILED" ]; then
+    refuse "$(update_failed_message)"
+fi
+
+# One backup at a time; a restoration and an update wait for it too.
+if ! hold_backup_lock; then
+    refuse "une autre sauvegarde ou une restauration est en cours depuis plus de 15 minutes ; réessayez plus tard"
+fi
+
+keep_days="$(conf_get KEEP_DAYS "$TORSADE_BACKUP_CONF")"
+if ! [[ "$keep_days" =~ ^[1-9][0-9]*$ ]]; then
+    keep_days=14
+fi
+
+ensure_dir 0700 root root "$TORSADE_BACKUPS"
+
+stamp="$(date -u +%Y%m%dT%H%M%SZ)"
+target="$TORSADE_BACKUPS/$stamp"
+count=1
+while [ -e "$target" ]; do
+    count=$((count + 1))
+    target="$TORSADE_BACKUPS/$stamp-$count"
+done
+
+# Written aside, then renamed: a backup that stopped halfway never looks
+# complete.
+work="$target.partial"
+(umask 0077 && mkdir "$work")
+
+# The tables of InnoDB exported in one transaction, which the application
+# keeps writing during the export without changing what it holds. Root
+# reaches MariaDB by its socket, with no password.
+(umask 0077 && mariadb-dump --single-transaction --quick --routines --triggers --hex-blob \
+    --default-character-set=utf8mb4 "$TORSADE_DB" | gzip -9 > "$work/database.sql.gz")
+
+(umask 0077 && {
+    printf 'TORSADE_VERSION=%s\n' "$(installed_version)"
+    printf 'MACHINE=%s\n' "$(hostname --fqdn 2> /dev/null || hostname)"
+    printf 'DATE=%s\n' "$(date -u -Is)"
+    printf 'DATABASE=%s\n' "$TORSADE_DB"
+} > "$work/backup.info")
+
+(umask 0077 && for setting in "${TORSADE_KEPT_SETTINGS[@]}"; do
+    grep -E "^$setting=" "$TORSADE_ENV" | tail -n 1 || true
+done > "$work/configuration.env")
+
+(cd "$work" && umask 0077 && sha256sum database.sql.gz backup.info configuration.env > SHA256SUMS)
+chmod 0600 "$work"/*
+mv -T "$work" "$target"
+work=""
+
+# The backups older than the days kept, and what failed backups left.
+find "$TORSADE_BACKUPS" -mindepth 1 -maxdepth 1 -type d -name '*.partial' -mmin +60 -exec rm -rf {} +
+find "$TORSADE_BACKUPS" -mindepth 1 -maxdepth 1 -type d \
+    -regextype posix-extended -regex '.*/[0-9]{8}T[0-9]{6}Z(-[0-9]+)?' \
+    ! -path "$target" -mtime "+$((keep_days - 1))" -exec rm -rf {} +
+
+completed=yes
+note "Sauvegarde réussie : $target ($(du -sh "$target" | cut -f 1))."
+printf '%s\n' "$target"

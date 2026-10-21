@@ -1,0 +1,18 @@
+<!-- torsade/resources/js/components/ui/breadcrumb/Breadcrumb.vue -->
+<script lang="ts" setup>
+import type { HTMLAttributes } from "vue"
+
+const props = defineProps<{
+  class?: HTMLAttributes["class"]
+}>()
+</script>
+
+<template>
+  <nav
+    :aria-label="$t('Breadcrumb')"
+    data-slot="breadcrumb"
+    :class="props.class"
+  >
+    <slot />
+  </nav>
+</template>

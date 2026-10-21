@@ -1,0 +1,484 @@
+{
+    "rules": {
+        "usual": {
+            "network": "10.0.0.0",
+            "prefix_length": 8,
+            "site_prefix_length": 16,
+            "vlan_prefix_length": 24,
+            "gateway_position": "first",
+            "ranges": [
+                {
+                    "kind": "reserved",
+                    "start_offset": 2,
+                    "end_offset": 20,
+                    "name": "Infrastructure"
+                },
+                {
+                    "kind": "static",
+                    "start_offset": 21,
+                    "end_offset": 99,
+                    "name": "Adresses fixes"
+                },
+                {
+                    "kind": "dhcp",
+                    "start_offset": 100,
+                    "end_offset": 200,
+                    "name": null
+                }
+            ]
+        },
+        "small subnets, gateway last": {
+            "network": "172.16.0.0",
+            "prefix_length": 12,
+            "site_prefix_length": 20,
+            "vlan_prefix_length": 26,
+            "gateway_position": "last",
+            "ranges": [
+                {
+                    "kind": "static",
+                    "start_offset": 1,
+                    "end_offset": 9,
+                    "name": null
+                },
+                {
+                    "kind": "dhcp",
+                    "start_offset": 10,
+                    "end_offset": 50,
+                    "name": "Postes"
+                }
+            ]
+        },
+        "no gateway, no range": {
+            "network": "192.168.0.0",
+            "prefix_length": 16,
+            "site_prefix_length": 24,
+            "vlan_prefix_length": 28,
+            "gateway_position": "none",
+            "ranges": []
+        },
+        "every site number": {
+            "network": "10.0.0.0",
+            "prefix_length": 8,
+            "site_prefix_length": 24,
+            "vlan_prefix_length": 30,
+            "gateway_position": "first",
+            "ranges": [
+                {
+                    "kind": "static",
+                    "start_offset": 1,
+                    "end_offset": 2,
+                    "name": null
+                }
+            ]
+        },
+        "half of the address space": {
+            "network": "128.0.0.0",
+            "prefix_length": 1,
+            "site_prefix_length": 2,
+            "vlan_prefix_length": 30,
+            "gateway_position": "last",
+            "ranges": []
+        },
+        "top of the address space": {
+            "network": "240.0.0.0",
+            "prefix_length": 4,
+            "site_prefix_length": 8,
+            "vlan_prefix_length": 16,
+            "gateway_position": "first",
+            "ranges": [
+                {
+                    "kind": "dhcp",
+                    "start_offset": 256,
+                    "end_offset": 65534,
+                    "name": null
+                }
+            ]
+        },
+        "no level of sites": {
+            "network": "192.168.0.0",
+            "prefix_length": 16,
+            "site_prefix_length": null,
+            "vlan_prefix_length": 24,
+            "gateway_position": "first",
+            "ranges": [
+                {
+                    "kind": "dhcp",
+                    "start_offset": 100,
+                    "end_offset": 200,
+                    "name": null
+                }
+            ]
+        }
+    },
+    "cases": [
+        {
+            "rule": "usual",
+            "max_site_number": 255,
+            "max_vid": 255,
+            "site_blocks": [
+                [0, "10.0.0.0/16"],
+                [1, "10.1.0.0/16"],
+                [20, "10.20.0.0/16"],
+                [255, "10.255.0.0/16"],
+                [256, null],
+                [300, null],
+                [65535, null],
+                [-1, null],
+                [null, null]
+            ],
+            "vlan_subnets": [
+                [20, 10, "10.20.10.0/24"],
+                [20, 1, "10.20.1.0/24"],
+                [20, 255, "10.20.255.0/24"],
+                [0, 1, "10.0.1.0/24"],
+                [255, 255, "10.255.255.0/24"],
+                [20, 256, null],
+                [20, 300, null],
+                [20, 4094, null],
+                [20, 0, null],
+                [256, 10, null],
+                [null, 10, null]
+            ],
+            "gateways": [
+                ["10.20.10.0", 24, "10.20.10.1"],
+                ["10.20.10.0", 26, "10.20.10.1"],
+                ["10.20.0.0", 16, "10.20.0.1"],
+                ["10.255.0.0", 31, "10.255.0.0"],
+                ["10.255.255.1", 32, "10.255.255.1"]
+            ],
+            "breakdowns": [
+                {
+                    "subnet": "10.20.10.0/24",
+                    "fits": true,
+                    "ranges": [
+                        [
+                            "reserved",
+                            "10.20.10.2",
+                            "10.20.10.20",
+                            "Infrastructure",
+                            true
+                        ],
+                        [
+                            "static",
+                            "10.20.10.21",
+                            "10.20.10.99",
+                            "Adresses fixes",
+                            true
+                        ],
+                        ["dhcp", "10.20.10.100", "10.20.10.200", null, true]
+                    ]
+                },
+                {
+                    "subnet": "192.168.1.0/24",
+                    "fits": true,
+                    "ranges": [
+                        [
+                            "reserved",
+                            "192.168.1.2",
+                            "192.168.1.20",
+                            "Infrastructure",
+                            true
+                        ],
+                        [
+                            "static",
+                            "192.168.1.21",
+                            "192.168.1.99",
+                            "Adresses fixes",
+                            true
+                        ],
+                        ["dhcp", "192.168.1.100", "192.168.1.200", null, true]
+                    ]
+                },
+                {
+                    "subnet": "10.20.10.0/25",
+                    "fits": false,
+                    "ranges": [
+                        [
+                            "reserved",
+                            "10.20.10.2",
+                            "10.20.10.20",
+                            "Infrastructure",
+                            true
+                        ],
+                        [
+                            "static",
+                            "10.20.10.21",
+                            "10.20.10.99",
+                            "Adresses fixes",
+                            true
+                        ],
+                        ["dhcp", "10.20.10.100", "10.20.10.200", null, false]
+                    ]
+                },
+                {
+                    "subnet": "10.20.10.0/27",
+                    "fits": false,
+                    "ranges": [
+                        [
+                            "reserved",
+                            "10.20.10.2",
+                            "10.20.10.20",
+                            "Infrastructure",
+                            true
+                        ],
+                        [
+                            "static",
+                            "10.20.10.21",
+                            "10.20.10.99",
+                            "Adresses fixes",
+                            false
+                        ],
+                        ["dhcp", "10.20.10.100", "10.20.10.200", null, false]
+                    ]
+                },
+                {
+                    "subnet": "10.20.0.0/16",
+                    "fits": true,
+                    "ranges": [
+                        [
+                            "reserved",
+                            "10.20.0.2",
+                            "10.20.0.20",
+                            "Infrastructure",
+                            true
+                        ],
+                        [
+                            "static",
+                            "10.20.0.21",
+                            "10.20.0.99",
+                            "Adresses fixes",
+                            true
+                        ],
+                        ["dhcp", "10.20.0.100", "10.20.0.200", null, true]
+                    ]
+                }
+            ]
+        },
+        {
+            "rule": "small subnets, gateway last",
+            "max_site_number": 255,
+            "max_vid": 63,
+            "site_blocks": [
+                [0, "172.16.0.0/20"],
+                [1, "172.16.16.0/20"],
+                [20, "172.17.64.0/20"],
+                [255, "172.31.240.0/20"],
+                [256, null]
+            ],
+            "vlan_subnets": [
+                [0, 1, "172.16.0.64/26"],
+                [20, 10, "172.17.66.128/26"],
+                [20, 63, "172.17.79.192/26"],
+                [255, 63, "172.31.255.192/26"],
+                [20, 64, null],
+                [20, 100, null],
+                [256, 1, null]
+            ],
+            "gateways": [
+                ["172.17.66.128", 26, "172.17.66.190"],
+                ["10.0.0.0", 24, "10.0.0.254"],
+                ["10.0.0.0", 30, "10.0.0.2"],
+                ["10.0.0.0", 31, "10.0.0.1"]
+            ],
+            "breakdowns": [
+                {
+                    "subnet": "172.17.66.128/26",
+                    "fits": true,
+                    "ranges": [
+                        [
+                            "static",
+                            "172.17.66.129",
+                            "172.17.66.137",
+                            null,
+                            true
+                        ],
+                        [
+                            "dhcp",
+                            "172.17.66.138",
+                            "172.17.66.178",
+                            "Postes",
+                            true
+                        ]
+                    ]
+                },
+                {
+                    "subnet": "172.17.66.128/27",
+                    "fits": false,
+                    "ranges": [
+                        [
+                            "static",
+                            "172.17.66.129",
+                            "172.17.66.137",
+                            null,
+                            true
+                        ],
+                        [
+                            "dhcp",
+                            "172.17.66.138",
+                            "172.17.66.178",
+                            "Postes",
+                            false
+                        ]
+                    ]
+                }
+            ]
+        },
+        {
+            "rule": "no gateway, no range",
+            "max_site_number": 255,
+            "max_vid": 15,
+            "site_blocks": [
+                [0, "192.168.0.0/24"],
+                [7, "192.168.7.0/24"],
+                [255, "192.168.255.0/24"],
+                [256, null]
+            ],
+            "vlan_subnets": [
+                [7, 1, "192.168.7.16/28"],
+                [7, 15, "192.168.7.240/28"],
+                [7, 16, null],
+                [7, 10, "192.168.7.160/28"]
+            ],
+            "gateways": [
+                ["192.168.7.16", 28, null],
+                ["10.0.0.0", 24, null]
+            ],
+            "breakdowns": [
+                { "subnet": "192.168.7.16/28", "fits": false, "ranges": [] }
+            ]
+        },
+        {
+            "rule": "every site number",
+            "max_site_number": 65535,
+            "max_vid": 63,
+            "site_blocks": [
+                [0, "10.0.0.0/24"],
+                [255, "10.0.255.0/24"],
+                [256, "10.1.0.0/24"],
+                [300, "10.1.44.0/24"],
+                [65535, "10.255.255.0/24"],
+                [65536, null]
+            ],
+            "vlan_subnets": [
+                [65535, 63, "10.255.255.252/30"],
+                [65535, 1, "10.255.255.4/30"],
+                [300, 10, "10.1.44.40/30"],
+                [65535, 64, null]
+            ],
+            "gateways": [["10.255.255.252", 30, "10.255.255.253"]],
+            "breakdowns": [
+                {
+                    "subnet": "10.255.255.252/30",
+                    "fits": true,
+                    "ranges": [
+                        [
+                            "static",
+                            "10.255.255.253",
+                            "10.255.255.254",
+                            null,
+                            true
+                        ]
+                    ]
+                },
+                {
+                    "subnet": "10.255.255.254/31",
+                    "fits": false,
+                    "ranges": [
+                        ["static", "10.255.255.255", "11.0.0.0", null, false]
+                    ]
+                }
+            ]
+        },
+        {
+            "rule": "half of the address space",
+            "max_site_number": 1,
+            "max_vid": 268435455,
+            "site_blocks": [
+                [0, "128.0.0.0/2"],
+                [1, "192.0.0.0/2"],
+                [2, null]
+            ],
+            "vlan_subnets": [
+                [0, 1, "128.0.0.4/30"],
+                [1, 4094, "192.0.63.248/30"],
+                [1, 1, "192.0.0.4/30"],
+                [2, 1, null]
+            ],
+            "gateways": [
+                ["192.0.63.248", 30, "192.0.63.250"],
+                ["255.255.255.252", 30, "255.255.255.254"]
+            ],
+            "breakdowns": []
+        },
+        {
+            "rule": "top of the address space",
+            "max_site_number": 15,
+            "max_vid": 255,
+            "site_blocks": [
+                [0, "240.0.0.0/8"],
+                [15, "255.0.0.0/8"],
+                [16, null]
+            ],
+            "vlan_subnets": [
+                [15, 255, "255.255.0.0/16"],
+                [15, 1, "255.1.0.0/16"],
+                [0, 255, "240.255.0.0/16"],
+                [15, 256, null]
+            ],
+            "gateways": [["255.255.0.0", 16, "255.255.0.1"]],
+            "breakdowns": [
+                {
+                    "subnet": "255.255.0.0/16",
+                    "fits": true,
+                    "ranges": [
+                        ["dhcp", "255.255.1.0", "255.255.255.254", null, true]
+                    ]
+                },
+                {
+                    "subnet": "255.255.255.0/24",
+                    "fits": false,
+                    "ranges": [
+                        [
+                            "dhcp",
+                            "255.255.255.255",
+                            "255.255.255.255",
+                            null,
+                            false
+                        ]
+                    ]
+                }
+            ]
+        },
+        {
+            "rule": "no level of sites",
+            "max_site_number": null,
+            "max_vid": 255,
+            "site_blocks": [
+                [0, null],
+                [1, null],
+                [20, null],
+                [null, null]
+            ],
+            "vlan_subnets": [
+                [null, 1, "192.168.1.0/24"],
+                [null, 20, "192.168.20.0/24"],
+                [null, 255, "192.168.255.0/24"],
+                [0, 20, "192.168.20.0/24"],
+                [7, 20, "192.168.20.0/24"],
+                [65536, 20, "192.168.20.0/24"],
+                [null, 256, null],
+                [null, 0, null]
+            ],
+            "gateways": [["192.168.20.0", 24, "192.168.20.1"]],
+            "breakdowns": [
+                {
+                    "subnet": "192.168.20.0/24",
+                    "fits": true,
+                    "ranges": [
+                        ["dhcp", "192.168.20.100", "192.168.20.200", null, true]
+                    ]
+                }
+            ]
+        }
+    ]
+}

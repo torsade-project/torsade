@@ -1,0 +1,37 @@
+# torsade/.github/workflows/docs.yml
+name: Documentation
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # The checks are plain Node scripts without any dependency: nothing
+      # needs to be installed.
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+
+      # Each check must pass on the good example and fail, with the expected
+      # message, on each bad one: a check that never fails proves nothing.
+      - name: Try the checks of the documentation on their examples
+        run: node --test scripts/docs/checks.test.mjs
+
+      # Relative links and their anchors, the table of contents, and the
+      # labels of the interface quoted in the guide. External links are
+      # never called.
+      - name: Check the documentation
+        run: npm run docs:check

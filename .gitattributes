@@ -1,0 +1,31 @@
+# torsade/.gitattributes
+# Fins de ligne LF dans tout le dépôt, quel que soit l'OS du contributeur
+* text=auto eol=lf
+
+# Scripts shell : LF obligatoire, ils s'exécutent sur Debian
+*.sh text eol=lf
+
+# Scripts batch Windows : CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binaires : aucune conversion
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.pdf binary
+*.zip binary
+*.gz binary
+
+# Laravel starter kit: language-aware diffs
+*.blade.php diff=html
+*.css diff=css
+*.html diff=html
+*.md diff=markdown
+*.php diff=php

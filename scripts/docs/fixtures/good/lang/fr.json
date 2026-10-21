@@ -1,0 +1,8 @@
+{
+    "Sites": "Sites",
+    "New site": "Nouveau site",
+    "Save": "Enregistrer",
+    "Planned": "Prévu",
+    ":count site created|:count sites created": ":count site créé|:count sites créés",
+    "{0} No site|[1,*] :count site": "{0} Aucun site|[1,*] :count site"
+}

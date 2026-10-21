@@ -1,0 +1,4 @@
+# torsade/public/robots.txt
+# An internal tool: nothing here is meant for a search engine.
+User-agent: *
+Disallow: /

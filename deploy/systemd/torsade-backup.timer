@@ -1,0 +1,15 @@
+# torsade/deploy/systemd/torsade-backup.timer
+#
+# MANAGED BY TORSADE: the installation writes this file and every update
+# rewrites it. A run missed while the machine was off happens at its start.
+
+[Unit]
+Description=Sauvegarde quotidienne de Torsade
+
+[Timer]
+OnCalendar=*-*-* 02:30:00
+RandomizedDelaySec=30min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

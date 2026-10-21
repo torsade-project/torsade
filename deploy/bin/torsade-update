@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+# torsade/deploy/bin/torsade-update
+#
+# Updates Torsade from the archive of a newer release:
+#
+#   sudo torsade-update [--checksums FILE | --without-checksum] torsade-X.Y.Z.tar.gz
+#
+# Checks the digest of the archive against SHA256SUMS (by default the file
+# of that name next to the archive), refuses a version equal to or older
+# than the one installed, unpacks the archive, then hands over to the
+# script of the new version, deploy/upgrade.sh, which leads the update.
+# Until then, nothing on the machine has changed.
+set -euo pipefail
+
+# shellcheck source=deploy/lib/torsade.sh
+. /usr/local/lib/torsade/torsade.sh
+
+usage() {
+    cat << 'EOF'
+Mise à jour de Torsade :
+
+  sudo torsade-update [options] torsade-X.Y.Z.tar.gz
+
+  --checksums FICHIER   fichier SHA256SUMS de l'archive (par défaut, celui qui
+                        est à côté de l'archive)
+  --without-checksum    sans vérifier l'empreinte de l'archive (déconseillé)
+  -h, --help            cette aide
+EOF
+}
+
+archive=""
+checksums=""
+check_digest=yes
+
+# An option that takes a value and comes without one.
+needs_value() {
+    if [ "$2" -lt 2 ]; then
+        printf 'Option sans valeur : %s\n\n' "$1" >&2
+        usage >&2
+        exit 2
+    fi
+}
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --checksums) needs_value "$1" "$#"; checksums="$2"; shift 2 ;;
+        --without-checksum) check_digest=no; shift ;;
+        -h | --help) usage; exit 0 ;;
+        -*) printf 'Option inconnue : %s\n\n' "$1" >&2; usage >&2; exit 2 ;;
+        *) archive="$1"; shift ;;
+    esac
+done
+
+require_root
+[ -n "$archive" ] || { usage >&2; exit 2; }
+open_log /var/log/torsade-update.log
+
+[ -f "$TORSADE_INSTALLED" ] || die "Torsade n'est pas installé sur cette machine : sudo bash deploy/install.sh l'installe."
+if [ -f "$TORSADE_UPDATE_FAILED" ]; then
+    die "$(update_failed_message)."
+fi
+[ -f "$archive" ] || die "archive introuvable : $archive"
+
+name="$(basename "$archive")"
+if ! [[ "$name" =~ ^torsade-([0-9]+\.[0-9]+\.[0-9]+)\.tar\.gz$ ]]; then
+    die "le nom de l'archive n'est pas torsade-X.Y.Z.tar.gz : $name"
+fi
+version="${BASH_REMATCH[1]}"
+
+# The archive is the one published: its digest is the one SHA256SUMS gives.
+if [ "$check_digest" = yes ]; then
+    checksums="${checksums:-$(dirname "$archive")/SHA256SUMS}"
+    [ -f "$checksums" ] || die "pas de fichier SHA256SUMS à côté de l'archive : donnez-le par --checksums."
+    expected="$(awk -v file="$name" '{ entry = $2; sub(/^\*/, "", entry) } entry == file { print $1 }' "$checksums")"
+    [ -n "$expected" ] || die "$checksums ne donne pas l'empreinte de $name."
+    actual="$(sha256sum "$archive" | cut -d ' ' -f 1)"
+    if [ "$actual" != "$expected" ]; then
+        die "l'empreinte de $name ne correspond pas à celle de $checksums : archive refusée, rien n'a changé."
+    fi
+    say "Empreinte de $name vérifiée."
+else
+    warn "l'empreinte de l'archive n'est pas vérifiée."
+fi
+
+installed="$(installed_version)"
+if ! version_gt "$version" "$installed"; then
+    die "la version $version n'est pas plus récente que la version installée $installed : rien n'a changé."
+fi
+
+# Unpacked next to the versions, then handed over to the update of the new
+# version, which removes this directory when it ends.
+incoming="$(mktemp -d "$TORSADE_ROOT/incoming.XXXXXX")"
+if ! tar -xzf "$archive" -C "$incoming" >> "$torsade_log" 2>&1; then
+    rm -rf "$incoming"
+    die "archive illisible : $name"
+fi
+
+unpacked="$incoming/torsade-$version"
+if [ ! -f "$unpacked/deploy/upgrade.sh" ] || [ "$(tr -d '[:space:]' < "$unpacked/VERSION" 2> /dev/null)" != "$version" ]; then
+    rm -rf "$incoming"
+    die "$name n'est pas une archive de Torsade $version."
+fi
+
+exec bash "$unpacked/deploy/upgrade.sh" "$incoming"

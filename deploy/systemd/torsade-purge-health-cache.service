@@ -1,0 +1,15 @@
+# torsade/deploy/systemd/torsade-purge-health-cache.service
+#
+# MANAGED BY TORSADE: the installation writes this file and every update
+# rewrites it. Started each day by torsade-purge-health-cache.timer.
+
+[Unit]
+Description=Purge du cache du point de contrôle de Torsade
+
+[Service]
+Type=oneshot
+User=torsade
+Group=torsade
+UMask=0027
+WorkingDirectory=/opt/torsade/current
+ExecStart=/usr/bin/php8.4 artisan torsade:purge-health-cache --no-interaction

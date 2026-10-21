@@ -1,0 +1,15 @@
+# torsade/deploy/systemd/torsade-purge-health-cache.timer
+#
+# MANAGED BY TORSADE: the installation writes this file and every update
+# rewrites it.
+
+[Unit]
+Description=Purge quotidienne du cache du point de contrôle de Torsade
+
+[Timer]
+OnCalendar=*-*-* 04:00:00
+RandomizedDelaySec=30min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

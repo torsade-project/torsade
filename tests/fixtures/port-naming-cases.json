@@ -1,0 +1,136 @@
+{
+    "patterns": [
+        ["{m}/0/{n}", null],
+        ["{n}", null],
+        ["port{n}", null],
+        ["Gi{m}/0/{n}", null],
+        ["eth{n}", null],
+        ["ge-{m}/0/{n}", null],
+        ["{m}:{n}", null],
+        ["Te{m}/1/{n}.1", null],
+        ["X{n}Y", null],
+        ["{n}/{m}", null],
+        ["", "no_number"],
+        ["port", "no_number"],
+        ["{m}/0/", "no_number"],
+        ["{N}", "no_number"],
+        ["{n", "no_number"],
+        ["{ n }", "no_number"],
+        ["{n}/{n}", "several_numbers"],
+        ["{m}{n}{n}", "several_numbers"],
+        ["{n}{n} ", "several_numbers"],
+        ["{m}/{m}/{n}", "several_members"],
+        ["{m}{m}{m}{n}", "several_members"],
+        ["port {n}", "characters"],
+        ["{n}é", "characters"],
+        ["{n}_a", "characters"],
+        ["{x}{n}", "characters"],
+        ["{n}}", "characters"],
+        ["{{n}", "characters"],
+        ["{M}{n}", "characters"],
+        ["p{m}{n}*", "characters"],
+        ["{n},", "characters"],
+        ["{n}\\", "characters"],
+        ["{n}\n", "characters"]
+    ],
+    "names": [
+        ["{m}/0/{n}", 1, 1, 3, ["1/0/1", "1/0/2", "1/0/3"]],
+        ["{m}/0/{n}", 2, 1, 2, ["2/0/1", "2/0/2"]],
+        ["Gi{m}/0/{n}", 16, 47, 2, ["Gi16/0/47", "Gi16/0/48"]],
+        ["port{n}", 3, 1, 2, ["port1", "port2"]],
+        ["eth{n}", 1, 0, 2, ["eth0", "eth1"]],
+        ["{n}", 1, 9, 3, ["9", "10", "11"]],
+        ["{n}/{m}", 4, 998, 2, ["998/4", "999/4"]],
+        ["{m}:{n}", 1, 1, 1, ["1:1"]],
+        ["Te{m}/1/{n}.1", 2, 5, 1, ["Te2/1/5.1"]],
+        ["{n}", 1, 1, 0, []],
+        ["MGMT", 1, 1, 1, ["MGMT"]],
+        ["{m}/WAN", 2, 7, 1, ["2/WAN"]]
+    ],
+    "single_patterns": [
+        ["MGMT", null],
+        ["WAN", null],
+        ["mgmt0", null],
+        ["{m}/mgmt", null],
+        ["Gi{m}/0/console", null],
+        ["{m}", null],
+        ["oob-1.2:a", null],
+        ["port{n}", null],
+        ["{m}/0/{n}", null],
+        ["{n}{n}", "several_numbers"],
+        ["{m}/{n}/{n}", "several_numbers"],
+        ["{m}{m}", "several_members"],
+        ["{m}/mgmt/{m}", "several_members"],
+        ["MG MT", "characters"],
+        ["WAN_1", "characters"],
+        ["mgmt{x}", "characters"],
+        ["liaison é", "characters"]
+    ],
+    "clashes": [
+        {
+            "groups": [
+                ["{m}/0/{n}", 1, 24],
+                ["{m}/1/{n}", 1, 4]
+            ],
+            "member": 1,
+            "clashes": {}
+        },
+        {
+            "groups": [
+                ["{m}/0/{n}", 1, 24],
+                ["{m}/0/{n}", 24, 4]
+            ],
+            "member": 1,
+            "clashes": { "1": ["1/0/24", 0] }
+        },
+        {
+            "groups": [
+                ["port{n}", 1, 8],
+                ["port{n}", 9, 2],
+                ["port{n}", 5, 1]
+            ],
+            "member": 1,
+            "clashes": { "2": ["port5", 0] }
+        },
+        {
+            "groups": [
+                ["{m}{n}", 11, 1],
+                ["{n}", 111, 1]
+            ],
+            "member": 1,
+            "clashes": { "1": ["111", 0] }
+        },
+        {
+            "groups": [
+                ["{m}{n}", 11, 1],
+                ["{n}", 111, 1]
+            ],
+            "member": 2,
+            "clashes": {}
+        },
+        {
+            "groups": [
+                ["a{n}", 1, 2],
+                ["b{n}", 1, 2],
+                ["a{n}", 2, 2],
+                ["b{n}", 0, 2]
+            ],
+            "member": 1,
+            "clashes": { "2": ["a2", 0], "3": ["b1", 1] }
+        },
+        {
+            "groups": [
+                ["{n}", 1, 3],
+                ["{n}", 3, 2],
+                ["{n}", 4, 1]
+            ],
+            "member": 1,
+            "clashes": { "1": ["3", 0], "2": ["4", 1] }
+        },
+        {
+            "groups": [],
+            "member": 1,
+            "clashes": {}
+        }
+    ]
+}

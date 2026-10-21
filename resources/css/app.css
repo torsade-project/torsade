@@ -1,0 +1,594 @@
+/* torsade/resources/css/app.css */
+
+/*
+  The themes of the application. Every colour, radius, font and text size
+  of the interface is defined here and nowhere else: components only use
+  the names declared in this file.
+
+  The vocabulary is the one of a patch bay: graphite steel in the dark
+  theme, light bay grey in the light one. The four pair colours of a T568B
+  cable (orange, green, blue, brown) are functional codes, never decoration,
+  and never the only carrier of an information: a label or a shape always
+  comes with them.
+
+  Contrast: 4.5:1 at least for a text on its background, 3:1 for the borders
+  of fields and for the cells of the address plan. A colour added here is
+  checked against the backgrounds it is used on first.
+*/
+@import 'tailwindcss';
+
+@import 'tw-animate-css';
+
+@import './fonts.css';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    /* Embedded fonts, served by the application, then the system ones. */
+    --font-sans:
+        'Barlow', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-mono:
+        'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas,
+        'Liberation Mono', monospace;
+
+    /* Interface text, then the sizes that have a name in the identity. */
+    --text-base: 0.9375rem;
+    --text-base--line-height: 1.5;
+    --text-note: 0.8125rem;
+    --text-note--line-height: 1.4;
+    --text-table: 0.90625rem;
+    --text-table--line-height: 1.4;
+    --text-title: 1.625rem;
+    --text-title--line-height: 1.2;
+    /* The title of a panel that stands alone, like the login one. */
+    --text-heading: 1.375rem;
+    --text-heading--line-height: 1.25;
+    /* The name of the application: in the sidebar, then on the login page. */
+    --text-brand: 1.3125rem;
+    --text-brand--line-height: 1;
+    --text-brand-lg: 2rem;
+    --text-brand-lg--line-height: 1;
+
+    /* Cells of the address plan, pills, fields and buttons, panels, windows. */
+    --radius-xs: 3px;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 10px;
+    --radius-xl: 12px;
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+
+    --color-sunken: var(--sunken);
+    --color-overlay: var(--overlay);
+
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-subtle-foreground: var(--subtle-foreground);
+
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+
+    --color-link: var(--link);
+
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-error: var(--error);
+    --color-error-surface: var(--error-surface);
+
+    --color-border: var(--border);
+    --color-border-strong: var(--border-strong);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    --color-pair-orange: var(--pair-orange);
+    --color-pair-green: var(--pair-green);
+    --color-pair-blue: var(--pair-blue);
+    --color-pair-brown: var(--pair-brown);
+
+    --color-vlan: var(--vlan);
+    --color-vlan-surface: var(--vlan-surface);
+
+    --color-success: var(--success);
+    --color-success-surface: var(--success-surface);
+    --color-success-panel: var(--success-panel);
+    --color-on-success: var(--on-success);
+
+    --color-plan-free: var(--plan-free);
+    --color-plan-documented: var(--plan-documented);
+
+    --color-qr-background: var(--qr-background);
+    --color-qr-module: var(--qr-module);
+
+    --color-sidebar: var(--sidebar-background);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* Light theme: the light grey of a bay. */
+:root {
+    /* Page, sidebar, panels, and the sunken surface of fields and of the
+       address plan. */
+    --background: #e4e7e6;
+    --sidebar-background: #d3d8d5;
+    --card: #f5f6f5;
+    --popover: #f5f6f5;
+    --sunken: #cbd0cc;
+
+    /* What dims the page behind a window. */
+    --overlay: #101317;
+
+    --border: #b5bcb8;
+    /* Fields, secondary buttons. */
+    --border-strong: #6e7772;
+    --input: var(--border-strong);
+
+    --foreground: #1c2126;
+    --card-foreground: var(--foreground);
+    --popover-foreground: var(--foreground);
+    /* Secondary text, then discreet text: marks, line numbers. */
+    --muted-foreground: #4c5560;
+    --subtle-foreground: #4f5862;
+
+    /* Hovered and selected entries, secondary fills. */
+    --muted: #d3d8d5;
+    --accent: var(--muted);
+    --accent-foreground: var(--foreground);
+    --secondary: var(--muted);
+    --secondary-foreground: var(--foreground);
+
+    --primary: #2563c4;
+    --primary-foreground: #ffffff;
+
+    /* Links, focus, "planned" status. */
+    --link: #1b4fa0;
+    --ring: var(--link);
+
+    /* Orange: VLANs, DHCP ranges, reservations. Green: active, gateway,
+       next free address. Blue: selection, information. Brown: retired. */
+    --pair-orange: #9c4d0b;
+    --pair-green: #22703c;
+    --pair-blue: #2563c4;
+    --pair-brown: #7a4f31;
+
+    /* Errors and destructive actions: the fill with the text it carries,
+       the text of a message, the background of an alert. */
+    --destructive: #c42b1c;
+    --destructive-foreground: #ffffff;
+    --error: #a82215;
+    --error-surface: #f9e1de;
+
+    /* The label of a VLAN: text and its tinted background, bordered with
+       the orange pair. */
+    --vlan: #9c4d0b;
+    --vlan-surface: #f6e3d2;
+
+    /* Green tints: text on a tinted background, the tint of a pill, the
+       tint of the "next free address" card, the text on a green fill. */
+    --success: #22703c;
+    --success-surface: #d5ebdb;
+    --success-panel: #dceee1;
+    --on-success: #ffffff;
+
+    /* Cells of the address plan, drawn on the sunken surface: the outline
+       of an empty cell and the fill of a documented one. The strong border
+       only reaches 2.96:1 there, hence a darker outline. The other states
+       take the colours of the pairs and of the links. */
+    --plan-free: #4f5862;
+    --plan-documented: #1c2126;
+
+    /* The QR code of the two-factor setup: dark modules on white. The
+       applications that read it expect it that way, so these two keep the
+       same value in the dark theme. */
+    --qr-background: #ffffff;
+    --qr-module: #1c2126;
+
+    /* Sidebar: entries, then the entry of the current page, lighter than
+       the bar. */
+    --sidebar-foreground: #3a424b;
+    --sidebar-accent: #f5f6f5;
+    --sidebar-accent-foreground: #1c2126;
+    --sidebar-border: var(--border);
+    --sidebar-ring: var(--ring);
+}
+
+/*
+  Dark theme, the default one: graphite steel. A page that prints in the
+  light theme, whatever the one on screen, marks the document "print-light"
+  while it is printed.
+*/
+.dark:not(.print-light) {
+    --background: #23282e;
+    --sidebar-background: #1e2328;
+    --card: #2c3238;
+    --popover: #2c3238;
+    --sunken: #1b1f24;
+
+    --overlay: #101317;
+
+    --border: #3a424b;
+    --border-strong: #76808b;
+
+    --foreground: #e6e9ec;
+    --muted-foreground: #a9b2bc;
+    --subtle-foreground: #97a1ac;
+
+    --muted: #343b43;
+
+    --primary: #2f6fcf;
+    --primary-foreground: #ffffff;
+
+    --link: #8db8f2;
+
+    --pair-orange: #e8833a;
+    --pair-green: #4caf68;
+    --pair-blue: #4c8ce4;
+    --pair-brown: #9a6a48;
+
+    /* White only reaches 3.7:1 on this red: the text on it is dark. */
+    --destructive: #e5534b;
+    --destructive-foreground: #15181c;
+    --error: #f49a94;
+    --error-surface: #3b2422;
+
+    --vlan: #f6c29a;
+    --vlan-surface: #3a2a1e;
+
+    --success: #9fd9ae;
+    --success-surface: #2b4733;
+    --success-panel: #1f3328;
+    --on-success: #10261a;
+
+    --plan-free: #76808b;
+    --plan-documented: #dce3ea;
+
+    --sidebar-foreground: #c3cad1;
+    --sidebar-accent: #343b43;
+    --sidebar-accent-foreground: #ffffff;
+}
+
+@layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        @apply border-border;
+    }
+
+    /* The colour behind the page, before and around the application. */
+    html {
+        @apply bg-background;
+    }
+
+    body {
+        @apply bg-background text-base text-foreground;
+    }
+
+    /* Figures of equal width, so that columns of numbers line up. */
+    table {
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+/*
+  What several screens share and Tailwind has no word for. Utilities set on
+  an element still win over these.
+*/
+@layer components {
+    /* A panel: a surface with a border, and no shadow. */
+    .panel {
+        @apply rounded-lg border bg-card;
+    }
+
+    /* A link inside a text or a table. */
+    .link {
+        @apply rounded-xs text-link underline-offset-4 hover:underline;
+    }
+
+    /*
+      The scroll bar of the menu: thin, a thumb in the strong border colour
+      on a transparent track, no arrows. The browsers that style their bars
+      through pseudo-elements get those, which let the arrows go; the others
+      take the standard properties, whose thin bar has none.
+    */
+    .menu-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-strong) transparent;
+    }
+
+    @supports selector(::-webkit-scrollbar) {
+        .menu-scrollbar {
+            scrollbar-width: auto;
+            scrollbar-color: auto;
+        }
+
+        .menu-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .menu-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .menu-scrollbar::-webkit-scrollbar-thumb {
+            border-radius: 999px;
+            background: var(--border-strong);
+        }
+
+        .menu-scrollbar::-webkit-scrollbar-button {
+            display: none;
+        }
+    }
+
+    /* A dense table in its frame. A table wider than its frame scrolls
+       inside it: the page itself never scrolls sideways. */
+    .table-frame {
+        @apply overflow-x-auto rounded-lg border;
+    }
+
+    .table-dense {
+        @apply w-full border-collapse text-left text-table;
+    }
+
+    .table-dense thead {
+        @apply bg-card;
+    }
+
+    /* Narrow gaps between the columns, so that the widest tables keep the
+       actions of their lines in sight at 1280 pixels, beside the sidebar. */
+    .table-dense th {
+        @apply px-2 py-2.5 font-semibold whitespace-nowrap first:pl-3.5 last:pr-3.5;
+    }
+
+    .table-dense tbody tr {
+        @apply border-t;
+    }
+
+    /*
+      One address of the address plan, like a port of a patch panel. A state
+      is told by its shape first: empty, struck through, full, full with a
+      dot, half full, dashed, thick outline, striped. The colour comes on top
+      of the shape and never replaces it, so that the plan still reads in
+      shades of grey. Every colour used here reaches 3:1 on the sunken
+      surface the plan is drawn on.
+    */
+    .plan-cell {
+        @apply relative block h-4 w-5.5 shrink-0 rounded-xs border;
+    }
+
+    /* Free: an empty cell with a thin outline. */
+    .plan-cell[data-state='free'] {
+        border-color: var(--plan-free);
+    }
+
+    /* The network and broadcast addresses: the same empty cell, struck
+       through. */
+    .plan-cell[data-state='unusable'] {
+        border-color: var(--plan-free);
+        background-image: linear-gradient(
+            to top right,
+            transparent calc(50% - 0.75px),
+            var(--plan-free) calc(50% - 0.75px),
+            var(--plan-free) calc(50% + 0.75px),
+            transparent calc(50% + 0.75px)
+        );
+    }
+
+    /* Documented: a full cell. */
+    .plan-cell[data-state='documented'] {
+        border-color: var(--plan-documented);
+        background-color: var(--plan-documented);
+    }
+
+    /* The gateway: a full cell with a dot in its centre, in the colour of
+       a text written on that green. */
+    .plan-cell[data-state='gateway'] {
+        border-color: var(--pair-green);
+        background-color: var(--pair-green);
+    }
+
+    .plan-cell[data-state='gateway']::after {
+        @apply absolute top-1/2 left-1/2 size-1.5 -translate-1/2 rounded-full;
+
+        content: '';
+        background-color: var(--on-success);
+    }
+
+    /* A DHCP reservation: the lower half of the cell is full. */
+    .plan-cell[data-state='reservation'] {
+        border-color: var(--pair-orange);
+        background-image: linear-gradient(
+            to top,
+            var(--pair-orange) 50%,
+            transparent 50%
+        );
+    }
+
+    /* Planned: an empty cell with a dashed outline. */
+    .plan-cell[data-state='planned'] {
+        border: 1.5px dashed var(--link);
+    }
+
+    /* Retired: an empty cell with a thick outline. */
+    .plan-cell[data-state='retired'] {
+        border: 3px solid var(--pair-brown);
+    }
+
+    /* A DHCP range: fine horizontal stripes. */
+    .plan-cell[data-state='dhcp_range'] {
+        border-color: var(--pair-orange);
+        background-image: repeating-linear-gradient(
+            to bottom,
+            var(--pair-orange) 0,
+            var(--pair-orange) 1px,
+            transparent 1px,
+            transparent 3px
+        );
+    }
+
+    /* Reserved range: a fine pattern of dots, in the colour of faint text. */
+    .plan-cell[data-state='reserved_range'] {
+        border-color: var(--subtle-foreground);
+        background-image: radial-gradient(
+            circle,
+            var(--subtle-foreground) 0.75px,
+            transparent 1px
+        );
+        background-size: 4px 4px;
+        background-position: center;
+    }
+
+    /* A port of a patch panel, in the style of the address plan: a numbered
+       cell whose shape tells its state, never its colour alone. */
+    .panel-cell {
+        @apply relative flex h-5.5 w-7 shrink-0 items-center justify-center rounded-xs border font-mono text-xs leading-none;
+
+        border-color: var(--plan-free);
+    }
+
+    /* A jack without a cord: an empty cell with a thick outline. */
+    .panel-cell[data-state='jack'] {
+        border: 3px solid var(--plan-documented);
+    }
+
+    /* Patched: a full cell. */
+    .panel-cell[data-state='patched'] {
+        border-color: var(--plan-documented);
+        background-color: var(--plan-documented);
+        color: var(--background);
+    }
+
+    /* A cord without a jack: a full cell, struck through. */
+    .panel-cell[data-state='cord'] {
+        border-color: var(--plan-documented);
+        background-color: var(--plan-documented);
+        background-image: linear-gradient(
+            to top right,
+            transparent calc(50% - 1px),
+            var(--background) calc(50% - 1px),
+            var(--background) calc(50% + 1px),
+            transparent calc(50% + 1px)
+        );
+        color: var(--background);
+    }
+
+    .table-dense td {
+        @apply px-2 py-2.25 first:pl-3.5 last:pr-3.5;
+    }
+}
+
+/*
+  Keyboard focus: one visible outline on every interactive element, whatever
+  the component says. Outside of any layer, so that no utility removes it.
+*/
+:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+}
+
+/* Inside a menu, the outline stays within the entry. */
+[role='menuitem']:focus-visible,
+[role='option']:focus-visible {
+    outline-offset: -2px;
+}
+
+/* No movement for those who asked their system for less of it. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/*
+  Printing a page that marks a part of itself "data-print-only": that part
+  alone, on one sheet, the navigation and the rest of the page left out.
+*/
+@media print {
+    @page {
+        size: landscape;
+        margin: 12mm;
+    }
+
+    body:has([data-print-only]) {
+        height: 0 !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+    }
+
+    body:has([data-print-only]) * {
+        visibility: hidden;
+    }
+
+    body:has([data-print-only]) [data-print-only],
+    body:has([data-print-only]) [data-print-only] * {
+        visibility: visible;
+    }
+
+    /* On the sheet, wherever the navigation left it on the screen. */
+    body:has([data-print-only]) [data-print-only] {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+    }
+}
+
+/* The field of the code of the second factor: the rules its library would
+   insert in a style element of its own, which no nonce would cover. The
+   page holds an empty element of the same name, which keeps it from
+   inserting one. */
+[data-input-otp]::selection {
+    background: transparent !important;
+    color: transparent !important;
+}
+
+[data-input-otp]:autofill,
+[data-input-otp]:-webkit-autofill {
+    background: transparent !important;
+    color: transparent !important;
+    border-color: transparent !important;
+    opacity: 0 !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+@supports (-webkit-touch-callout: none) {
+    [data-input-otp] {
+        letter-spacing: -0.6em !important;
+        font-weight: 100 !important;
+        font-stretch: ultra-condensed;
+        font-optical-sizing: none !important;
+        left: -1px !important;
+        right: 1px !important;
+    }
+}
+
+[data-input-otp] + * {
+    pointer-events: all !important;
+}

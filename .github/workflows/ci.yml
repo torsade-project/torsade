@@ -1,0 +1,389 @@
+# torsade/.github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    # The target platform: PHP 8.4 and MariaDB 11.8, the versions shipped by
+    # Debian 13. Tests never run on SQLite.
+    services:
+      mariadb:
+        image: mariadb:11.8
+        env:
+          # A throwaway server that only lives for the job: no password to
+          # keep in the repository.
+          MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: '1'
+          MARIADB_DATABASE: torsade_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      DB_CONNECTION: mariadb
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USERNAME: root
+      DB_PASSWORD: ''
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.4'
+          extensions: ctype, curl, dom, fileinfo, filter, hash, intl, mbstring, openssl, pdo, pdo_mysql, session, tokenizer, xml, zip
+          tools: composer:v2
+          coverage: none
+
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Audit PHP dependencies
+        run: composer audit
+
+      - name: Audit Node dependencies
+        run: npm audit --audit-level=high
+
+      - name: Prepare the environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Build the front-end
+        run: npm run build
+
+      # The licences of what is embedded must travel with its files, the
+      # typefaces and the engine that lays the diagrams out: the build
+      # copies their texts next to them.
+      - name: Check that the licences of the embedded packages are in the build
+        run: |
+          test -s public/build/assets/barlow-LICENSE.txt
+          test -s public/build/assets/ibm-plex-mono-LICENSE.txt
+          test -s public/build/assets/elkjs-LICENSE.txt
+
+      - name: Check PHP code style (Pint)
+        run: vendor/bin/pint --test
+
+      - name: Static analysis (Larastan)
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+
+      - name: Check front-end lint and formatting
+        run: npm run check
+
+      - name: Check TypeScript types (vue-tsc)
+        run: npm run types:check
+
+      - name: Run the tests on MariaDB
+        run: php artisan test
+
+      # The browser tests drive the built application in Chromium, on the
+      # same database. The browser is large and only changes with the test
+      # runner, so it is cached under the version of the runner.
+      - name: Read the version of the browser test runner
+        id: playwright
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache the test browser
+        id: browser-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-chromium-${{ steps.playwright.outputs.version }}
+
+      - name: Install the test browser
+        if: steps.browser-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      # The cache holds the browser, not the system libraries it needs.
+      - name: Install the system libraries of the test browser
+        if: steps.browser-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      - name: Run the browser tests
+        run: npm run test:e2e
+
+      # A picture of each main screen, in the dark and the light theme, to
+      # look at after a change of the interface.
+      - name: Keep the screenshots of the main screens
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: screenshots
+          path: test-results/screenshots
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Keep the traces of the failed browser tests
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: browser-test-results
+          path: test-results
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Check line endings
+        run: |
+          if git ls-files --eol | grep -v -E '^i/(lf|-text|none)'; then
+            echo "Text files must be stored with LF line endings."
+            exit 1
+          fi
+
+  # The archive of a release, built from the commit as the installation on
+  # a server receives it: dependencies of production, front end compiled.
+  archive:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.4'
+          extensions: ctype, curl, dom, fileinfo, filter, hash, intl, mbstring, openssl, pdo, pdo_mysql, session, tokenizer, xml, zip
+          tools: composer:v2
+          coverage: none
+
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Check the shell scripts
+        shell: bash
+        run: git ls-files -z -- '*.sh' 'deploy/bin/*' | xargs -0 shellcheck --external-sources
+
+      - name: Build the archive
+        run: scripts/build-archive.sh "$RUNNER_TEMP/release"
+
+      - name: Check the content of the archive against its list
+        run: scripts/check-archive.sh "$RUNNER_TEMP/release/torsade-$(cat VERSION).tar.gz"
+
+      - name: Keep the archive
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: torsade-archive
+          path: ${{ runner.temp }}/release
+          if-no-files-found: error
+          retention-days: 14
+
+      # What the installation on Debian must provide: the extensions of
+      # PHP the dependencies of production require.
+      - name: List the PHP extensions the dependencies require
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/platform"
+          composer check-platform-reqs --lock --no-dev --format=json \
+            | php -r 'foreach (json_decode(stream_get_contents(STDIN), true) as $requirement) { if (str_starts_with($requirement["name"], "ext-")) { echo substr($requirement["name"], 4), "\n"; } }' \
+            > "$RUNNER_TEMP/platform/extensions.txt"
+          cat "$RUNNER_TEMP/platform/extensions.txt"
+          test -s "$RUNNER_TEMP/platform/extensions.txt"
+
+      - name: Keep the list of the PHP extensions
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: platform
+          path: ${{ runner.temp }}/platform
+          if-no-files-found: error
+          retention-days: 14
+
+  # The archive installed on Debian 13, in containers that start systemd as
+  # a machine does: the installation and its resumption, HTTPS, headers,
+  # cookies, owners and modes, the first sign-in, torsade:check, backups
+  # and restorations, updates and their failures, a certificate of an
+  # authority with HSTS, and a rebuild on a new machine.
+  installation:
+    needs: archive
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Fetch the archive
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: torsade-archive
+          path: ${{ runner.temp }}/release
+
+      - name: Fetch the list of the PHP extensions
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: platform
+          path: ${{ runner.temp }}/platform
+
+      - name: Build the image of a Debian 13 machine
+        run: docker build --tag torsade-debian scripts/ci/debian
+
+      - name: Start three machines with systemd
+        run: |
+          for machine in torsade-1 torsade-2 torsade-3; do
+            docker run --detach --name "$machine" --hostname "$machine" \
+              --privileged --cgroupns=host --volume /sys/fs/cgroup:/sys/fs/cgroup:rw \
+              --tmpfs /run --tmpfs /run/lock torsade-debian
+          done
+          for machine in torsade-1 torsade-2 torsade-3; do
+            state="$(docker exec "$machine" timeout 180 systemctl is-system-running --wait || true)"
+            echo "$machine: systemd $state"
+            if [ "$state" != running ] && [ "$state" != degraded ]; then
+              docker exec "$machine" systemctl --failed --no-pager
+              exit 1
+            fi
+            docker exec "$machine" mkdir -p /root/release /root/platform /root/ci
+            docker cp "$RUNNER_TEMP/release/." "$machine:/root/release/"
+            docker cp "$RUNNER_TEMP/platform/." "$machine:/root/platform/"
+            docker cp scripts/ci/test-installation.sh "$machine:/root/ci/test-installation.sh"
+          done
+
+      - name: Install with a self-signed certificate, once interrupted
+        run: docker exec torsade-1 bash /root/ci/test-installation.sh install
+
+      - name: Check HTTPS, the headers, the cookies and what is served
+        run: docker exec torsade-1 bash /root/ci/test-installation.sh web
+
+      - name: Check owners, modes, accounts, extensions and timers
+        run: docker exec torsade-1 bash /root/ci/test-installation.sh files
+
+      - name: Sign in as the first administrator
+        run: docker exec torsade-1 bash /root/ci/test-installation.sh login
+
+      - name: Check the configuration with torsade:check
+        run: docker exec torsade-1 bash /root/ci/test-installation.sh check
+
+      - name: Resume an installation, refuse a complete one
+        run: docker exec torsade-1 bash /root/ci/test-installation.sh resume
+
+      - name: Back up and restore on the same machine
+        run: docker exec torsade-1 bash /root/ci/test-installation.sh backup
+
+      - name: Update three times
+        run: docker exec torsade-1 bash /root/ci/test-installation.sh update
+
+      - name: Refuse or recover the updates that fail
+        run: docker exec torsade-1 bash /root/ci/test-installation.sh update-failures
+
+      - name: Reset an account from the command line
+        run: docker exec torsade-1 bash /root/ci/test-installation.sh accounts
+
+      - name: Declare a reverse proxy
+        run: docker exec torsade-1 bash /root/ci/test-installation.sh proxy
+
+      - name: Turn on the example of nftables of the documentation
+        run: docker exec torsade-1 bash /root/ci/test-installation.sh nftables
+
+      - name: Install with a certificate of an authority and HSTS
+        run: docker exec torsade-2 bash /root/ci/test-installation.sh authority
+
+      - name: Rebuild a new machine from a backup of the first one
+        run: |
+          mkdir -p "$RUNNER_TEMP/machine-1"
+          for file in torsade-sauvegarde.tar data app-key admin-password; do
+            docker cp "torsade-1:/root/ci-state/$file" "$RUNNER_TEMP/machine-1/$file"
+          done
+          docker exec torsade-2 mkdir -p /root/machine-1
+          docker cp "$RUNNER_TEMP/machine-1/." torsade-2:/root/machine-1/
+          docker exec torsade-2 bash /root/ci/test-installation.sh rebuild
+
+      - name: Install at a terminal, as in the trial in a virtual machine
+        run: docker exec torsade-3 bash /root/ci/test-installation.sh terminal
+
+      # The journals of the scripts and of the services, which hold no
+      # password, to read the cause of a failure.
+      - name: Show the journals of the machines
+        if: failure()
+        run: |
+          for machine in torsade-1 torsade-2 torsade-3; do
+            echo "::group::$machine"
+            docker exec "$machine" bash -c 'for file in /var/log/torsade-*.log /var/log/nginx/error.log /var/log/php8.4-fpm.log /var/log/torsade/*.log; do [ -f "$file" ] && { echo "== $file"; tail -n 80 "$file"; }; done; journalctl --no-pager -n 150 -u nginx -u php8.4-fpm -u mariadb; journalctl --no-pager -n 50 -t torsade-backup -t torsade-restore'
+            echo "::endgroup::"
+          done
+
+  # On a tag vX.Y.Z equal to the version of the archive, once every other
+  # job has passed: the release of the tag, with the archive and its
+  # digest, and the section of the changelog for its notes. Only this job
+  # may write to the repository; no action receives its token.
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [ci, archive, installation]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Fetch the archive
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: torsade-archive
+          path: release
+
+      - name: Check that the tag is the version of the archive
+        id: version
+        run: |
+          shopt -s nullglob
+          archives=(release/torsade-*.tar.gz)
+          if [ "${#archives[@]}" -ne 1 ]; then
+            echo "Expected one archive, found ${#archives[@]}."
+            exit 1
+          fi
+          version="${archives[0]#release/torsade-}"
+          version="${version%.tar.gz}"
+          if [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "The tag $GITHUB_REF_NAME is not v$version, the version of the archive."
+            exit 1
+          fi
+          (cd release && sha256sum --check --strict SHA256SUMS)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          tar -xzOf "release/torsade-$VERSION.tar.gz" "torsade-$VERSION/CHANGELOG.md" \
+            | awk -v heading="## [$VERSION]" 'index($0, heading) == 1 { found = 1; next } found && /^## \[/ { exit } found' \
+            > "$RUNNER_TEMP/notes.md"
+          if ! grep -q '[^[:space:]]' "$RUNNER_TEMP/notes.md"; then
+            echo "The changelog has no section for $VERSION."
+            exit 1
+          fi
+          gh release create "$GITHUB_REF_NAME" \
+            "release/torsade-$VERSION.tar.gz" release/SHA256SUMS \
+            --repo "$GITHUB_REPOSITORY" \
+            --verify-tag \
+            --title "Torsade $VERSION" \
+            --notes-file "$RUNNER_TEMP/notes.md"

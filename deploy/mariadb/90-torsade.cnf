@@ -1,0 +1,8 @@
+# torsade/deploy/mariadb/90-torsade.cnf
+#
+# Written by the installation of Torsade when MariaDB listened beyond the
+# machine. Torsade reaches the server by its socket: it listens on the
+# machine only.
+
+[mariadbd]
+bind-address = 127.0.0.1

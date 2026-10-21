@@ -1,0 +1,13 @@
+# torsade/deploy/systemd/torsade-backup.service
+#
+# MANAGED BY TORSADE: the installation writes this file and every update
+# rewrites it. Started each day by torsade-backup.timer.
+
+[Unit]
+Description=Sauvegarde de Torsade
+After=mariadb.service
+Wants=mariadb.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/torsade-backup
