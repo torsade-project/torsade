@@ -51,7 +51,7 @@ Une faille se signale en privé, jamais dans un ticket, une discussion ou une pu
 
 ## Licence
 
-Torsade est un logiciel libre : vous pouvez le redistribuer et le modifier selon les termes de la licence publique générale GNU (GNU GPL), version 3 ou toute version ultérieure, telle que publiée par la Free Software Foundation. Il est distribué dans l'espoir qu'il sera utile, mais sans aucune garantie, pas même la garantie implicite d'une valeur marchande ou d'une adéquation à un usage particulier. Le texte complet de la licence est dans [LICENSE](LICENSE).
+Torsade est un logiciel libre : vous pouvez le redistribuer et le modifier selon les termes de la licence publique générale GNU (GNU GPL), version 3 ou toute version ultérieure (identifiant SPDX `GPL-3.0-or-later`), telle que publiée par la Free Software Foundation. Il est distribué dans l'espoir qu'il sera utile, mais sans aucune garantie, pas même la garantie implicite d'une valeur marchande ou d'une adéquation à un usage particulier. Le texte complet de la licence est dans [LICENSE](LICENSE).
 
 Copyright (C) 2026 les contributeurs de Torsade
 
