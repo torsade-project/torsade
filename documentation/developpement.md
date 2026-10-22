@@ -255,4 +255,9 @@ Un lien ne compte qu'une fois le fichier visé suivi par Git : après avoir cré
 
 ## Versions
 
-Le numéro de version suit le versionnage sémantique : `MAJEUR.MINEUR.CORRECTIF`, en `0.y.z` pendant le développement initial. Sa source unique est le fichier `VERSION`. Les changements de chaque version sont décrits dans [CHANGELOG.md](../CHANGELOG.md), au format Keep a Changelog, en anglais : une modification ajoute son entrée à la section `Unreleased`, qui devient la section de la version à sa publication. Chaque version publiée porte un tag Git `vX.Y.Z`. Sur ce tag, une fois tous les autres travaux de la CI réussis, la CI vérifie que le tag est la version de l'archive et publie la version sur GitHub, avec l'archive et son fichier `SHA256SUMS`.
+Le numéro de version suit le versionnage sémantique : `MAJEUR.MINEUR.CORRECTIF`, en `0.y.z` pendant le développement initial. Sa source unique est le fichier `VERSION`. Les changements de chaque version sont décrits dans [CHANGELOG.md](../CHANGELOG.md), au format Keep a Changelog, en anglais : une modification ajoute son entrée à la section `Unreleased`, qui devient la section de la version à sa publication. Chaque version publiée porte un tag Git `vX.Y.Z`. Sur ce tag, une fois tous les autres travaux de la CI réussis :
+
+1. le travail `attest` vérifie que le tag est la version de l'archive, puis atteste la provenance de l'archive par une attestation de GitHub (`actions/attest`) ; il n'a que les droits de l'attestation et ne peut pas écrire dans le contenu du dépôt ;
+2. le travail `release` vérifie à son tour que le tag est la version de l'archive, vérifie l'attestation de l'archive pour ce dépôt (`gh attestation verify`), puis publie la version sur GitHub, avec l'archive et son fichier `SHA256SUMS`.
+
+Un administrateur peut vérifier la même attestation avant d'installer une version : voir [l'intégrité de l'archive](administration/securite.md#intégrité-de-larchive).
