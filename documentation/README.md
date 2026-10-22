@@ -39,6 +39,7 @@ L'installation et l'exploitation d'un serveur Torsade, sur une machine Debian 13
 
 ## Contributeurs
 
-| Page                              | Contenu                                                                                              |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| [Développement](developpement.md) | Prérequis, installation locale, commandes, tests, démonstration, archive, documentation, conventions |
+| Page                                    | Contenu                                                                                              |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| [Développement](developpement.md)       | Prérequis, installation locale, commandes, tests, démonstration, archive, documentation, conventions |
+| [Politique de sécurité](../SECURITY.md) | Signaler une faille en privé, versions qui reçoivent les correctifs                                  |

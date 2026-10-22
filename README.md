@@ -2,6 +2,11 @@
 
 # Torsade
 
+Torsade is a self-hosted web application that documents the network of a small business: VLANs, subnets, IP addresses, devices, ports, links, wall jacks, patch panels and patching.
+It records the declared state of the network: it is not a monitoring tool, it never scans the network and never connects to a device.
+Its interface and its documentation are in French.
+It is free software, released under the GNU General Public License, version 3 or any later version.
+
 Torsade est une application web auto-hébergée de documentation réseau pour les PME : VLAN, sous-réseaux, adresses IP, équipements, ports, liaisons, prises murales, panneaux et brassage. Elle remplace les fichiers Excel et les connaissances détenues par une seule personne.
 
 Elle sert aussi à concevoir une infrastructure qui n'existe pas encore : chaque objet peut être prévu avant d'être actif.
@@ -12,7 +17,7 @@ Torsade documente l'état déclaré du réseau. Ce n'est pas un outil de supervi
 
 ## État
 
-En développement : Torsade n'est pas encore prêt pour la production. Le numéro de version reste en `0.y.z` jusqu'à la première version utilisable en production.
+En développement : Torsade n'est pas encore prêt pour la production. La version 0.20.0 est sa première version publique ; le numéro de version reste en `0.y.z` jusqu'à la première version utilisable en production.
 
 ## Fonctions
 
@@ -35,6 +40,14 @@ En développement : Torsade n'est pas encore prêt pour la production. Le numér
 - [Guide des utilisateurs](documentation/guide/premiers-pas.md), organisé par tâche
 - [Développement](documentation/developpement.md) : installation locale, commandes, tests, contributions
 - [Changements de chaque version](CHANGELOG.md)
+
+## Contribuer
+
+Les conventions d'une contribution sont dans [Contribuer](documentation/developpement.md#contribuer), une section du guide de développement, qui décrit aussi l'installation locale, les commandes et les tests.
+
+## Sécurité
+
+Une faille se signale en privé, jamais dans un ticket, une discussion ou une pull request publics : la [politique de sécurité](SECURITY.md) dit comment, et quelles versions reçoivent les correctifs.
 
 ## Licence
 
