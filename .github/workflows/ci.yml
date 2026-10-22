@@ -379,10 +379,10 @@ jobs:
 
   # Then the release of the tag, with the archive and its digest, and the
   # section of the changelog for its notes, once the attestation of the
-  # archive is verified. Only this job may write to the repository, and no
-  # action receives its token: the two actions of the job attest may obtain
-  # an identity token, in a job of their own that cannot write to the
-  # content of the repository.
+  # archive is verified. Only this job may write to the content of the
+  # repository, and no action receives its token: the two actions of the
+  # job attest may obtain an identity token, in a job of their own that may
+  # only add an attestation to the repository.
   release:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [ci, archive, installation, attest]
