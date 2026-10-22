@@ -45,7 +45,7 @@ tar -tvzf "$archive" --numeric-owner > "$work/details"
 # files of the application, and the empty skeleton of the places it writes
 # to, directories only.
 trees='^(app|config|database/migrations|lang|public|resources/views|routes|vendor|deploy|documentation)/'
-files='^(artisan|bootstrap/app\.php|bootstrap/providers\.php|composer\.json|composer\.lock|VERSION|README\.md|CHANGELOG\.md)$'
+files='^(artisan|bootstrap/app\.php|bootstrap/providers\.php|composer\.json|composer\.lock|VERSION|README\.md|CHANGELOG\.md|LICENSE|SECURITY\.md)$'
 dirs='^(bootstrap|bootstrap/cache|database|resources|storage|storage/app|storage/app/private|storage/app/public|storage/framework|storage/framework/cache|storage/framework/cache/data|storage/framework/sessions|storage/framework/views|storage/logs)/$'
 
 # Never, even inside a tree of the list.
@@ -85,11 +85,14 @@ if [ -s "$work/writable" ]; then
     head -n 20 "$work/writable" >&2
 fi
 
-# What the installation cannot do without.
+# What the installation cannot do without, and what must travel with every
+# copy: the licence, and how to report a vulnerability.
 required=(
     artisan
     composer.json
     VERSION
+    LICENSE
+    SECURITY.md
     vendor/autoload.php
     public/index.php
     public/build/manifest.json

@@ -198,7 +198,7 @@ Les schémas sont mis en page par ELK, du paquet `elkjs`, publié sous licence �
 
 ## Archive d'une version
 
-L'archive `torsade-X.Y.Z.tar.gz` est ce qu'un serveur reçoit : le code, les dépendances PHP de production, l'interface compilée, les scripts d'installation de `deploy/`, la documentation, `README.md` et `CHANGELOG.md`. Elle ne contient ni les tests, ni les sources du front, ni les outils de développement.
+L'archive `torsade-X.Y.Z.tar.gz` est ce qu'un serveur reçoit : le code, les dépendances PHP de production, l'interface compilée, les scripts d'installation de `deploy/`, la documentation, `README.md`, `CHANGELOG.md`, la licence (`LICENSE`) et la politique de sécurité (`SECURITY.md`). Elle ne contient ni les tests, ni les sources du front, ni les outils de développement.
 
 ```bash
 scripts/build-archive.sh ../release
