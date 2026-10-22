@@ -28,7 +28,7 @@ Elle note ce qu'elle fait dans `/var/log/torsade-update.log`, lisible par root s
 
 L'empreinte prouve que l'archive est intacte, pas qu'elle vient bien de Torsade : téléchargez toujours l'archive et `SHA256SUMS` depuis la page des versions du dépôt, en HTTPS : <https://github.com/torsade-project/torsade/releases>.
 
-Pour vérifier aussi qu'elle vient bien de Torsade, vérifiez son attestation de provenance avant de la copier sur la machine. Cette vérification est facultative ; elle se fait depuis un poste qui a l'outil `gh` de GitHub et un accès à GitHub (voir [l'intégrité de l'archive](securite.md#intégrité-de-larchive)) :
+Pour vérifier aussi qu'elle vient bien de Torsade, vérifiez son attestation de provenance avant de la copier sur la machine. Cette vérification est facultative ; elle se fait depuis un poste qui a l'outil `gh` de GitHub, connecté à un compte GitHub (voir [l'intégrité de l'archive](securite.md#intégrité-de-larchive)) :
 
 ```bash
 gh attestation verify torsade-X.Y.Z.tar.gz --repo torsade-project/torsade

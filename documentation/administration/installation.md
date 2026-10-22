@@ -33,7 +33,7 @@ HSTS (le navigateur n'accepte plus que HTTPS pour ce nom, pendant un an) ne s'ac
 
 ## Déroulé
 
-Téléchargez l'archive `torsade-X.Y.Z.tar.gz` de la version voulue et son fichier `SHA256SUMS` depuis la page des versions du dépôt, en HTTPS : <https://github.com/torsade-project/torsade/releases>. L'empreinte de `SHA256SUMS` prouve que l'archive est intacte, pas son origine. Pour vérifier aussi sa provenance, facultativement, depuis un poste qui a l'outil `gh` de GitHub et un accès à GitHub (voir [l'intégrité de l'archive](securite.md#intégrité-de-larchive)) :
+Téléchargez l'archive `torsade-X.Y.Z.tar.gz` de la version voulue et son fichier `SHA256SUMS` depuis la page des versions du dépôt, en HTTPS : <https://github.com/torsade-project/torsade/releases>. L'empreinte de `SHA256SUMS` prouve que l'archive est intacte, pas son origine. Pour vérifier aussi sa provenance, facultativement, depuis un poste qui a l'outil `gh` de GitHub, connecté à un compte GitHub (voir [l'intégrité de l'archive](securite.md#intégrité-de-larchive)) :
 
 ```bash
 gh attestation verify torsade-X.Y.Z.tar.gz --repo torsade-project/torsade

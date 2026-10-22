@@ -53,7 +53,7 @@ HSTS s'applique au seul nom de l'application, sans ses sous-domaines (`includeSu
 
 Le fichier `SHA256SUMS` publié avec chaque version prouve que l'archive téléchargée est intacte : `sha256sum --check SHA256SUMS` et `torsade-update` le vérifient. Il ne prouve pas son origine : quelqu'un qui remplacerait l'archive pourrait remplacer ce fichier aussi. Téléchargez donc toujours les deux depuis la page des versions du dépôt de Torsade, en HTTPS : <https://github.com/torsade-project/torsade/releases>.
 
-Pour vérifier aussi son origine, chaque archive publiée porte une attestation de provenance, signée par la CI du dépôt quand elle construit la version. Cette vérification est facultative. Elle se fait depuis un poste qui a l'outil `gh` de GitHub et un accès à GitHub, dans le dossier de l'archive téléchargée :
+Pour vérifier aussi son origine, chaque archive publiée porte une attestation de provenance, signée par la CI du dépôt quand elle construit la version. Cette vérification est facultative. Elle se fait depuis un poste qui a l'outil `gh` de GitHub, connecté à un compte GitHub, dans le dossier de l'archive téléchargée :
 
 ```bash
 gh attestation verify torsade-X.Y.Z.tar.gz --repo torsade-project/torsade
