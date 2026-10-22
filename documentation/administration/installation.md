@@ -22,6 +22,8 @@ L'application est servie en HTTPS sous un seul nom :
 
 Remplacez ces exemples par vos propres valeurs. Le nom choisi est aussi celui que doit couvrir le certificat.
 
+L'adresse IPv4 d'un essai doit rester fixe : réservez-la pour la machine sur le serveur DHCP de votre routeur (réservation DHCP), ou donnez à la machine une adresse statique. Sinon, dès qu'elle change, toutes les pages répondent par une erreur 400 (voir [le dépannage](exploitation.md#dépannage)). Ces réglages se font hors de Torsade, sur le routeur ou dans la configuration réseau de la machine.
+
 ## Certificat
 
 - **Certificat fourni** (recommandé) : un certificat pour ce nom, signé par une autorité que les postes de votre organisation connaissent (autorité interne ou publique), au format PEM, suivi de sa chaîne, et sa clé privée sans phrase de passe. Le script vérifie que la clé correspond au certificat, que la chaîne est complète jusqu'à une autorité connue du système ou à celle que vous donnez par `--authority`, que le nom est couvert et que les dates sont valides.
