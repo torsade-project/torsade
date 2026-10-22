@@ -83,6 +83,8 @@ paths=(
     VERSION
     README.md
     CHANGELOG.md
+    LICENSE
+    SECURITY.md
 )
 
 # The scripts of the installation and the documentation of the

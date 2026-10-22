@@ -8,7 +8,8 @@
         "documentation",
         "ipam"
     ],
-    "license": "proprietary",
+    "homepage": "https://github.com/torsade-project/torsade",
+    "license": "GPL-3.0-or-later",
     "require": {
         "php": "^8.4.1",
         "inertiajs/inertia-laravel": "^3.0",

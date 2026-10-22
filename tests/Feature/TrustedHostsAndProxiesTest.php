@@ -59,10 +59,14 @@ class TrustedHostsAndProxiesTest extends TestCase
      */
     private function assertRefusedWithoutDetail(TestResponse $response): void
     {
-        $this->assertGreaterThanOrEqual(400, $response->getStatusCode());
-        $this->assertLessThan(500, $response->getStatusCode());
+        // A bad request, on the page whose title the troubleshooting of the
+        // administration quotes.
+        $response->assertStatus(400);
 
         $content = (string) $response->getContent();
+
+        $this->assertStringContainsString('<title>La requête a été refusée - Torsade</title>', $content);
+        $this->assertStringContainsString('Erreur 400', $content);
 
         $this->assertStringNotContainsString('torsade.example.test', $content);
         $this->assertStringNotContainsString('Untrusted', $content);
@@ -81,7 +85,7 @@ class TrustedHostsAndProxiesTest extends TestCase
         $this->loginPageOn('torsade.example.test')->assertOk();
     }
 
-    public function test_another_host_is_refused_with_a_4xx_without_detail(): void
+    public function test_another_host_is_refused_with_a_400_without_detail(): void
     {
         $this->checkTheHost();
 

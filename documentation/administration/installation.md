@@ -22,6 +22,8 @@ L'application est servie en HTTPS sous un seul nom :
 
 Remplacez ces exemples par vos propres valeurs. Le nom choisi est aussi celui que doit couvrir le certificat.
 
+L'adresse IPv4 d'un essai doit rester fixe : réservez-la pour la machine sur le serveur DHCP de votre routeur (réservation DHCP), ou donnez à la machine une adresse statique. Sinon, dès qu'elle change, toutes les pages répondent par une erreur 400 (voir [le dépannage](exploitation.md#dépannage)). Ces réglages se font hors de Torsade, sur le routeur ou dans la configuration réseau de la machine.
+
 ## Certificat
 
 - **Certificat fourni** (recommandé) : un certificat pour ce nom, signé par une autorité que les postes de votre organisation connaissent (autorité interne ou publique), au format PEM, suivi de sa chaîne, et sa clé privée sans phrase de passe. Le script vérifie que la clé correspond au certificat, que la chaîne est complète jusqu'à une autorité connue du système ou à celle que vous donnez par `--authority`, que le nom est couvert et que les dates sont valides.
@@ -31,7 +33,13 @@ HSTS (le navigateur n'accepte plus que HTTPS pour ce nom, pendant un an) ne s'ac
 
 ## Déroulé
 
-Copiez l'archive `torsade-X.Y.Z.tar.gz` et son fichier `SHA256SUMS` sur la machine, dans un même dossier, puis vérifiez l'empreinte et décompressez :
+Téléchargez l'archive `torsade-X.Y.Z.tar.gz` de la version voulue et son fichier `SHA256SUMS` depuis la page des versions du dépôt, en HTTPS : <https://github.com/torsade-project/torsade/releases>. L'empreinte de `SHA256SUMS` prouve que l'archive est intacte, pas son origine. Pour vérifier aussi sa provenance, facultativement, depuis un poste qui a l'outil `gh` de GitHub, connecté à un compte GitHub (voir [l'intégrité de l'archive](securite.md#intégrité-de-larchive)) :
+
+```bash
+gh attestation verify torsade-X.Y.Z.tar.gz --repo torsade-project/torsade
+```
+
+Copiez l'archive et son fichier `SHA256SUMS` sur la machine, dans un même dossier, puis vérifiez l'empreinte et décompressez :
 
 ```bash
 sha256sum --check SHA256SUMS

@@ -37,9 +37,11 @@ Redémarrez, connectez-vous dans la console de la machine et notez son adresse :
 hostname -I
 ```
 
+Cette adresse sera le nom de l'application : elle doit rester fixe. Réservez-la pour la machine sur le serveur DHCP de votre routeur, ou donnez à la machine une adresse statique ; sinon, dès qu'elle change, toutes les pages de Torsade répondent par une erreur 400 (voir [le dépannage](exploitation.md#dépannage)).
+
 ## 4. Archive de Torsade
 
-Sur le poste Windows, téléchargez depuis la page des versions de Torsade sur GitHub (« Releases ») les deux fichiers de la version voulue : `torsade-X.Y.Z.tar.gz` et `SHA256SUMS`, dans un même dossier.
+Sur le poste Windows, téléchargez depuis la page des versions de Torsade sur GitHub (« Releases »), <https://github.com/torsade-project/torsade/releases>, les deux fichiers de la version voulue : `torsade-X.Y.Z.tar.gz` et `SHA256SUMS`, dans un même dossier.
 
 Copiez-les sur la machine virtuelle depuis PowerShell ou l'invite de commandes de Windows, qui fournissent `scp` :
 

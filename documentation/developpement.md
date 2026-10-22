@@ -27,7 +27,7 @@ Pour construire l'archive d'une version ou modifier les scripts shell : Git Bash
 ### 1. Code et dépendances
 
 ```bash
-git clone https://github.com/Xe-La/Torsade.git torsade
+git clone https://github.com/torsade-project/torsade.git torsade
 cd torsade
 composer install
 npm ci
@@ -198,7 +198,7 @@ Les schémas sont mis en page par ELK, du paquet `elkjs`, publié sous licence �
 
 ## Archive d'une version
 
-L'archive `torsade-X.Y.Z.tar.gz` est ce qu'un serveur reçoit : le code, les dépendances PHP de production, l'interface compilée, les scripts d'installation de `deploy/`, la documentation, `README.md` et `CHANGELOG.md`. Elle ne contient ni les tests, ni les sources du front, ni les outils de développement.
+L'archive `torsade-X.Y.Z.tar.gz` est ce qu'un serveur reçoit : le code, les dépendances PHP de production, l'interface compilée, les scripts d'installation de `deploy/`, la documentation, `README.md`, `CHANGELOG.md`, la licence (`LICENSE`) et la politique de sécurité (`SECURITY.md`). Elle ne contient ni les tests, ni les sources du front, ni les outils de développement.
 
 ```bash
 scripts/build-archive.sh ../release
@@ -206,7 +206,7 @@ scripts/check-archive.sh ../release/torsade-X.Y.Z.tar.gz
 ```
 
 - `build-archive.sh` part du commit en cours, jamais de l'arbre de travail, et refuse de tourner si celui-ci contient des modifications non commitées. Il demande Git, PHP, Composer, Node, npm, GNU tar, gzip et `sha256sum`, et écrit l'archive et son fichier `SHA256SUMS` dans le dossier donné.
-- `check-archive.sh` compare l'archive à la liste de ce qu'elle peut contenir : rien d'autre, chaque fichier à root et écrit par lui seul, les scripts d'installation exécutables et sans retour chariot, les fichiers nécessaires à l'installation présents.
+- `check-archive.sh` compare l'archive à la liste de ce qu'elle peut contenir : rien d'autre, chaque fichier à root et écrit par lui seul, les scripts d'installation exécutables et sans retour chariot, les fichiers nécessaires à l'installation présents, ainsi que la licence et la politique de sécurité.
 
 Sous Windows, les deux scripts se lancent dans Git Bash, où `composer` doit être une commande que Bash trouve : un `composer.bat` ne suffit pas.
 
@@ -241,6 +241,7 @@ Un lien ne compte qu'une fois le fichier visé suivi par Git : après avoir cré
 
 ## Contribuer
 
+- Une contribution est reçue sous la licence de Torsade, la licence publique générale GNU, version 3 ou toute version ultérieure, sans cession de droits : aucun accord de contributeur n'est demandé. Voir la [licence](../README.md#licence).
 - Code, noms de tables et de colonnes, commentaires, messages de commit et `CHANGELOG.md` sont en anglais ; l'interface et la documentation, en français. Chaque texte de l'interface passe par les traductions (`lang/fr.json`).
 - Une branche par sujet, nommée `feat/`, `fix/` ou `chore/` suivi d'un nom court en anglais.
 - Commits au format Conventional Commits : `feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`, `ci:`. Un sujet par commit.
@@ -254,4 +255,9 @@ Un lien ne compte qu'une fois le fichier visé suivi par Git : après avoir cré
 
 ## Versions
 
-Le numéro de version suit le versionnage sémantique : `MAJEUR.MINEUR.CORRECTIF`, en `0.y.z` pendant le développement initial. Sa source unique est le fichier `VERSION`. Les changements de chaque version sont décrits dans [CHANGELOG.md](../CHANGELOG.md), au format Keep a Changelog, en anglais : une modification ajoute son entrée à la section `Unreleased`, qui devient la section de la version à sa publication. Chaque version publiée porte un tag Git `vX.Y.Z`. Sur ce tag, une fois tous les autres travaux de la CI réussis, la CI vérifie que le tag est la version de l'archive et publie la version sur GitHub, avec l'archive et son fichier `SHA256SUMS`.
+Le numéro de version suit le versionnage sémantique : `MAJEUR.MINEUR.CORRECTIF`, en `0.y.z` pendant le développement initial. Sa source unique est le fichier `VERSION`. Les changements de chaque version sont décrits dans [CHANGELOG.md](../CHANGELOG.md), au format Keep a Changelog, en anglais : une modification ajoute son entrée à la section `Unreleased`, qui devient la section de la version à sa publication. Chaque version publiée porte un tag Git `vX.Y.Z`. Sur ce tag, une fois tous les autres travaux de la CI réussis :
+
+1. le travail `attest` vérifie que le tag est la version de l'archive, puis atteste la provenance de l'archive par une attestation de GitHub (`actions/attest`) ; il n'a que les droits de l'attestation et ne peut pas écrire dans le contenu du dépôt ;
+2. le travail `release` vérifie à son tour que le tag est la version de l'archive, vérifie l'attestation de l'archive pour ce dépôt (`gh attestation verify`), puis publie la version sur GitHub, avec l'archive et son fichier `SHA256SUMS`.
+
+Un administrateur peut vérifier la même attestation avant d'installer une version : voir [l'intégrité de l'archive](administration/securite.md#intégrité-de-larchive).
