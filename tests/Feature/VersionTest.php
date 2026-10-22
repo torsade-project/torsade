@@ -29,7 +29,7 @@ class VersionTest extends TestCase
         $content = (string) file_get_contents(base_path('VERSION'));
 
         $this->assertMatchesRegularExpression('/^\d+\.\d+\.\d+\n$/', $content);
-        $this->assertSame("0.19.0\n", $content);
+        $this->assertSame("0.20.0\n", $content);
     }
 
     public function test_the_configuration_reads_the_version_file(): void

@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.0] - 2026-10-22
+
+Upgrading from 0.19.0 runs no migration and asks nothing of the administrator: the application does not change. This is the first public version of Torsade.
+
+### Added
+
+- Torsade is free software, under the GNU General Public License, version 3 or any later version (`GPL-3.0-or-later`). The text of the licence is in `LICENSE`, and the licence is declared in `README.md`, `composer.json` and `package.json`; a contribution is received under the same licence, without any assignment of rights. The source code of each published version is in the repository, at the tag of the version.
+- `SECURITY.md`, in French then in English, tells how to report a vulnerability: privately, through the private vulnerability reporting of GitHub, never in a public issue, discussion or pull request. While the version is `0.y.z`, only the latest version receives security fixes. `README.md` and the table of contents of the documentation link to it.
+- The archive of a release ships `LICENSE` and `SECURITY.md`.
+- On a tag, the CI attests the provenance of the archive with an artifact attestation of GitHub, in a job of its own that cannot write to the content of the repository, and verifies that attestation before it creates the release. An administrator may verify it as well, from a computer with `gh` and access to GitHub: `gh attestation verify torsade-X.Y.Z.tar.gz --repo torsade-project/torsade`. The pages of the installation, the update and the security describe it, and give the address of the releases, `https://github.com/torsade-project/torsade/releases`.
+- The troubleshooting explains an error 400 on every page, "La requête a été refusée": the application was opened under another name than its own, or the address of a machine installed by its IPv4 address changed. The installation says that the IPv4 address of a trial must stay fixed, by a reservation on the DHCP server or a static address.
+
+### Changed
+
+- The repository is now `torsade-project/torsade`; the guide of development clones it from there.
+- `README.md` opens on a summary in English, says that 0.20.0 is the first public version, and links to the security policy and to the conventions of a contribution.
+
+### Security
+
+- The tools of development move to vite-plus 1.3.0, which no longer bundles the vulnerable versions of launch-editor (GHSA-698v-4r3x-3vcv, GHSA-r825-w8mm-5pxw, GHSA-587h-7wmj-h5pm), and vue-tsc to 3.3 with it. They are tools of development only: none of them is in the archive of a release.
+
 ## [0.19.0] - 2026-10-19
 
 Upgrading from 0.18.0 keeps every object and runs three migrations, without losing anything: a new table holds the jack cords; a position placed by hand can also be the one of a patch panel, once per panel and on the physical diagram only; the length of the blocks of sites of the addressing rule becomes optional, the rule in place keeping its own. Going back to 0.18.0 loses only the jack cords, the positions of the panels and a rule without a level of sites.
