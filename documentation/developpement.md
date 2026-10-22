@@ -27,7 +27,7 @@ Pour construire l'archive d'une version ou modifier les scripts shell : Git Bash
 ### 1. Code et dépendances
 
 ```bash
-git clone https://github.com/Xe-La/Torsade.git torsade
+git clone https://github.com/torsade-project/torsade.git torsade
 cd torsade
 composer install
 npm ci
