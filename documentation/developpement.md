@@ -206,7 +206,7 @@ scripts/check-archive.sh ../release/torsade-X.Y.Z.tar.gz
 ```
 
 - `build-archive.sh` part du commit en cours, jamais de l'arbre de travail, et refuse de tourner si celui-ci contient des modifications non commitées. Il demande Git, PHP, Composer, Node, npm, GNU tar, gzip et `sha256sum`, et écrit l'archive et son fichier `SHA256SUMS` dans le dossier donné.
-- `check-archive.sh` compare l'archive à la liste de ce qu'elle peut contenir : rien d'autre, chaque fichier à root et écrit par lui seul, les scripts d'installation exécutables et sans retour chariot, les fichiers nécessaires à l'installation présents.
+- `check-archive.sh` compare l'archive à la liste de ce qu'elle peut contenir : rien d'autre, chaque fichier à root et écrit par lui seul, les scripts d'installation exécutables et sans retour chariot, les fichiers nécessaires à l'installation présents, ainsi que la licence et la politique de sécurité.
 
 Sous Windows, les deux scripts se lancent dans Git Bash, où `composer` doit être une commande que Bash trouve : un `composer.bat` ne suffit pas.
 
